@@ -1,0 +1,59 @@
+name: Build and Push Docker Images
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '0 0 * * 0' # This will run the workflow every Sunday at midnight (UTC)
+
+jobs:
+  build-push:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout third-party repository
+      uses: actions/checkout@v2
+      with:
+        repository: omnivore-app/omnivore
+        ref: main # Replace with the branch you want to build from
+
+    - name: Set up Docker
+      uses: docker/setup-docker@v1
+
+    - name: Install Docker Compose
+      run: |
+        sudo curl -L "https://github.com/docker/compose/releases/download/1.29.2/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+        sudo chmod +x /usr/local/bin/docker-compose
+
+    - name: Log in to Docker Hub
+      run: echo "${{ secrets.DOCKER_HUB_PASSWORD }}" | docker login -u kozko2001 --password-stdin
+
+    - name: Get short commit SHA
+      id: short_sha
+      run: echo "::set-output name=sha::$(git rev-parse --short HEAD)"
+
+    - name: Build Docker images
+      run: docker-compose build
+
+    - name: Add tags
+      run: |
+        docker tag  omnivore-web kozko2001/omnivore-web:${{ steps.short_sha.outputs.sha }} 
+        docker tag  omnivore-web kozko2001/omnivore-web:latest
+        docker tag  omnivore-content-fetch kozko2001/omnivore-content-fetch:${{ steps.short_sha.outputs.sha }} 
+        docker tag  omnivore-content-fetch kozko2001/omnivore-content-fetch:latest
+        docker tag  omnivore-rule-handler kozko2001/omnivore-rule-handler:${{ steps.short_sha.outputs.sha }} 
+        docker tag  omnivore-rule-handler kozko2001/omnivore-rule-handler:latest
+        docker tag  omnivore-api kozko2001/omnivore-api:${{ steps.short_sha.outputs.sha }} 
+        docker tag  omnivore-api kozko2001/omnivore-api:latest
+        docker tag  omnivore-migrate kozko2001/omnivore-migrate:${{ steps.short_sha.outputs.sha }} 
+        docker tag  omnivore-migrate kozko2001/omnivore-migrate:latest
+
+        docker push   kozko2001/omnivore-web:${{ steps.short_sha.outputs.sha }} 
+        docker push   kozko2001/omnivore-web:latest
+        docker push   kozko2001/omnivore-content-fetch:${{ steps.short_sha.outputs.sha }} 
+        docker push   kozko2001/omnivore-content-fetch:latest
+        docker push   kozko2001/omnivore-rule-handler:${{ steps.short_sha.outputs.sha }} 
+        docker push   kozko2001/omnivore-rule-handler:latest
+        docker push   kozko2001/omnivore-api:${{ steps.short_sha.outputs.sha }} 
+        docker push   kozko2001/omnivore-api:latest
+        docker push   kozko2001/omnivore-migrate:${{ steps.short_sha.outputs.sha }} 
+        docker push   kozko2001/omnivore-migrate:latest
