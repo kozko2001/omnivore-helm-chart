@@ -36,16 +36,17 @@ jobs:
 
     - name: Add tags
       run: |
-        docker tag  omnivore-web kozko2001/omnivore-web:${{ steps.short_sha.outputs.sha }} 
-        docker tag  omnivore-web kozko2001/omnivore-web:latest
-        docker tag  omnivore-content-fetch kozko2001/omnivore-content-fetch:${{ steps.short_sha.outputs.sha }} 
-        docker tag  omnivore-content-fetch kozko2001/omnivore-content-fetch:latest
-        docker tag  omnivore-rule-handler kozko2001/omnivore-rule-handler:${{ steps.short_sha.outputs.sha }} 
-        docker tag  omnivore-rule-handler kozko2001/omnivore-rule-handler:latest
-        docker tag  omnivore-api kozko2001/omnivore-api:${{ steps.short_sha.outputs.sha }} 
-        docker tag  omnivore-api kozko2001/omnivore-api:latest
-        docker tag  omnivore-migrate kozko2001/omnivore-migrate:${{ steps.short_sha.outputs.sha }} 
-        docker tag  omnivore-migrate kozko2001/omnivore-migrate:latest
+        docker images
+        docker tag  omnivore-helm-chart_web kozko2001/omnivore-web:${{ steps.short_sha.outputs.sha }} 
+        docker tag  omnivore-helm-chart_web kozko2001/omnivore-web:latest
+        docker tag  omnivore-helm-chart_content-fetch kozko2001/omnivore-content-fetch:${{ steps.short_sha.outputs.sha }} 
+        docker tag  omnivore-helm-chart_content-fetch kozko2001/omnivore-content-fetch:latest
+        docker tag  omnivore-helm-chart_rule-handler:latest kozko2001/omnivore-rule-handler:${{ steps.short_sha.outputs.sha }} 
+        docker tag  omnivore-helm-chart_rule-handler:latest kozko2001/omnivore-rule-handler:latest
+        docker tag  omnivore-helm-chart_api kozko2001/omnivore-api:${{ steps.short_sha.outputs.sha }} 
+        docker tag  omnivore-helm-chart_api kozko2001/omnivore-api:latest
+        docker tag  omnivore-helm-chart_migrate kozko2001/omnivore-migrate:${{ steps.short_sha.outputs.sha }} 
+        docker tag  omnivore-helm-chart_migrate kozko2001/omnivore-migrate:latest
 
         docker push   kozko2001/omnivore-web:${{ steps.short_sha.outputs.sha }} 
         docker push   kozko2001/omnivore-web:latest
