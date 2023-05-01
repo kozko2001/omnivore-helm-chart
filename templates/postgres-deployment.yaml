@@ -1,0 +1,47 @@
+{{- if .Values.postgres.enabled }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: omnivore-postgres
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: omnivore-postgres
+  template:
+    metadata:
+      labels:
+        app: omnivore-postgres
+    spec:
+      containers:
+        - name: omnivore-postgres
+          image: {{ .Values.postgres.image }}
+          ports:
+            - containerPort: 5432
+          envFrom:
+            - configMapRef:
+                name: omnivore-postgres-config
+          volumeMounts:
+            - name: postgres-data
+              mountPath: /var/lib/postgresql/data
+          livenessProbe:
+            exec:
+              command: ["pg_isready", "-U", "{{ .Values.postgres.user }}"]
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            timeoutSeconds: 12
+            successThreshold: 1
+            failureThreshold: 3
+          readinessProbe:
+            exec:
+              command: ["pg_isready", "-U", "{{ .Values.postgres.user }}"]
+            initialDelaySeconds: 5
+            periodSeconds: 2
+            timeoutSeconds: 12
+            successThreshold: 1
+            failureThreshold: 3
+      volumes:
+        - name: postgres-data
+          persistentVolumeClaim:
+            claimName: omnivore-postgres-pvc
+{{- end }}

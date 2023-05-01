@@ -1,0 +1,57 @@
+{{- if .Values.elasticsearch.enabled }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Values.elasticsearch.containerName }}
+  labels:
+    app: {{ .Values.elasticsearch.containerName }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: {{ .Values.elasticsearch.containerName }}
+  template:
+    metadata:
+      labels:
+        app: {{ .Values.elasticsearch.containerName }}
+    spec:
+      containers:
+        - name: {{ .Values.elasticsearch.containerName }}
+          image: docker.elastic.co/elasticsearch/elasticsearch:7.17.1
+          ports:
+            - containerPort: 9200
+          livenessProbe:
+            httpGet:
+              path: /
+              port: 9200
+            initialDelaySeconds: 30
+            periodSeconds: 20
+            timeoutSeconds: 10
+            failureThreshold: 3
+          readinessProbe:
+            httpGet:
+              path: /
+              port: 9200
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            timeoutSeconds: 5
+          env:
+            - name: discovery.type
+              value: {{ .Values.elasticsearch.config.discoveryType }}
+            - name: http.cors.allow-origin
+              value: {{ quote .Values.elasticsearch.config.httpCorsAllowOrigin }}
+            - name: http.cors.enabled
+              value: {{ quote .Values.elasticsearch.config.httpCorsEnabled }}
+            - name: http.cors.allow-headers
+              value: {{ .Values.elasticsearch.config.httpCorsAllowHeaders }}
+            - name: http.cors.allow-credentials
+              value: {{ quote .Values.elasticsearch.config.httpCorsAllowCredentials }}
+          volumeMounts:
+            - name: elastic-data
+              mountPath: /usr/share/elasticsearch/data
+          resources:
+            {{- toYaml .Values.elasticsearch.resources | nindent 12 }}
+      volumes:
+        - name: elastic-data
+          emptyDir: {}
+{{- end }}

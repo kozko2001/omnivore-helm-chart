@@ -1,0 +1,15 @@
+{{- if and .Values.elasticsearch.persistence.enabled .Values.elasticsearch.enabled }}
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: omnivore-elasticsearch-pvc
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: {{ .Values.elasticsearch.persistence.size }}
+  {{- if .Values.elasticsearch.persistence.storageClassName }}
+  storageClassName: {{ .Values.elasticsearch.persistence.storageClassName }}
+  {{- end }}
+{{- end }}

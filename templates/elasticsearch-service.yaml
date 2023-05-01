@@ -1,0 +1,14 @@
+
+{{- if .Values.elasticsearch.enabled }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Values.elasticsearch.containerName }}
+spec:
+  type: ClusterIP
+  ports:
+    - port: 9200
+      targetPort: 9200
+  selector:
+    app: {{ .Values.elasticsearch.containerName }}
+{{- end }}

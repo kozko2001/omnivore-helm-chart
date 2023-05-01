@@ -1,0 +1,17 @@
+
+{{- if .Values.kibana.enabled }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "omnivore.fullname" . }}-kibana
+  labels:
+    {{- include "omnivore.labels" . | nindent 4 }}
+spec:
+  type: ClusterIP
+  ports:
+    - port: 5601
+      targetPort: 5601
+      protocol: TCP
+  selector:
+    app: {{ include "omnivore.fullname" . }}-kibana
+{{- end }}

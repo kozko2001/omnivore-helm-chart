@@ -1,0 +1,53 @@
+{{- if .Values.kibana.enabled }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "omnivore.fullname" . }}-kibana
+  labels:
+    {{- include "omnivore.labels" . | nindent 4 }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: {{ include "omnivore.fullname" . }}-kibana
+  template:
+    metadata:
+      labels:
+        app: {{ include "omnivore.fullname" . }}-kibana
+    spec:
+      initContainers:
+      - name: wait-for-elasticsearch
+        image: appropriate/curl
+        env:
+          - name: ELASTICSEARCH_HOSTS
+            value: {{ .Values.kibana.elasticUrl }}
+        command:
+        - sh
+        - -c
+        - until curl $ELASTICSEARCH_HOSTS ; do echo "Waiting for elasticsearch to be up"; sleep 5; done;
+
+      containers:
+        - name: {{ include "omnivore.fullname" . }}-kibana
+          image: {{ .Values.kibana.image }}
+          env:
+            - name: ELASTICSEARCH_HOSTS
+              value: {{ .Values.kibana.elasticUrl }}
+          livenessProbe:
+            httpGet:
+              path: /
+              port: 5601
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 3
+            successThreshold: 1
+          readinessProbe:
+            httpGet:
+              path: /
+              port: 5601
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 3
+            successThreshold: 1
+{{- end }}

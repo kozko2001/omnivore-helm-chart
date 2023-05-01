@@ -1,0 +1,41 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: {{ include "omnivore.fullname" . }}-migrate
+  labels:
+    {{- include "omnivore.labels" . | nindent 4 }}
+spec:
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: {{ include "omnivore.fullname" . }}-migrate
+    spec:
+      restartPolicy: OnFailure
+      initContainers:
+      - name: wait-for-postgresql
+        image: {{ .Values.postgres.image }}
+        envFrom:
+          - configMapRef:
+              name: {{ include "omnivore.fullname" . }}-migrate
+        command:
+        - sh
+        - -c
+        - until pg_isready -h $PG_HOST -p 5432 -U $PG_USER -d $PG_DB; do echo -n . ; sleep 5; done;
+      - name: wait-for-elasticsearch
+        image: appropriate/curl
+        envFrom:
+          - configMapRef:
+              name: {{ include "omnivore.fullname" . }}-migrate
+        command:
+        - sh
+        - -c
+        - until curl $ELASTIC_URL; do echo "Waiting for elasticsearch to be up"; sleep 5; done;
+
+      containers:
+        - name: {{ include "omnivore.fullname" . }}-migrate
+          image: {{ .Values.migrate.image }}
+          # command: ["/bin/sh", "./packages/db/setup.sh"]
+          command: ["/bin/sh", "echo test"]
+          envFrom:
+            - configMapRef:
+                name: {{ include "omnivore.fullname" . }}-migrate
